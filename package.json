@@ -1,0 +1,11 @@
+{
+  "name": "gltfviewer_server",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "start:port": "node server.js $PORT"
+  },
+  "dependencies": {
+    "ws": "^8.18.1"
+  }
+}
