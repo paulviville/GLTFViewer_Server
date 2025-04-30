@@ -29,6 +29,7 @@ export default class ServerManager {
 
 		this.#newUserBroadcast(clientId);
 		this.#newUserUpdateTransforms(clientId);
+		this.#newUserUpdateCameras(clientId);
 
 		socket.on('message', ( message ) => { this.#handleMessage(clientId, message); });
 		socket.on('close', ( ) => { this.#handleClose(clientId); });
@@ -48,8 +49,35 @@ export default class ServerManager {
 			case Commands.DESELECT:
 				this.#handleDeselect(messageData.senderId, messageData.nodes);
 				break;
+			case Commands.START_TRANSFORM:
+				console.log(messageData.command);
+				break;
 			case Commands.UPDATE_TRANSFORM:
 				this.#handleUpdateTransform(messageData.senderId, messageData.nodes);
+				break;
+			case Commands.END_TRANSFORM:
+				console.log(messageData.command);
+				break;
+			case Commands.UPDATE_CAMERA:
+				console.log(messageData.command);
+				break;
+			case Commands.START_POINTER:
+				console.log(messageData.command);
+				break;
+			case Commands.UPDATE_POINTER:
+				console.log(messageData.command);
+				break;
+			case Commands.END_POINTER:
+				console.log(messageData.command);
+				break;
+			case Commands.ADD_MARKER:
+				console.log(messageData.command);
+				break;
+			case Commands.UPDATE_MARKER:
+				console.log(messageData.command);
+				break;
+			case Commands.DELETE_MARKER:
+				console.log(messageData.command);
 				break;
 			default:
 				console.log(messageData.command);
@@ -86,6 +114,14 @@ export default class ServerManager {
 		this.#deselectBroadcast(clientId, nodes);	
 	}
 
+	#handleUpdateCamera ( clientId, viewMatrix ) {
+		
+	}
+
+	#handleUpdatePointer ( clientId, origin, end ) {
+		
+	}
+
 	#handleUpdateTransform ( clientId, nodes ) {
 		console.log(`ServerManager - #handleUpdateTransform ${clientId}`);
 		
@@ -96,6 +132,19 @@ export default class ServerManager {
 
 		this.#updateTransformBroadcast(clientId, nodes);
 	}
+
+	#newUserUpdateTransforms ( clientId ) {
+		console.log(`ServerManager - #newUserUpdateTransforms ${clientId}`);
+
+		const socket = this.#clientsManager.getSocket(clientId);
+
+		for ( const {name, matrix} of this.#sceneDescriptor.nodesData ) {
+			const nodes = [{name, matrix: matrix.toArray()}];
+			socket.send(this.#messageUpdateTransform(this.#serverId, nodes));
+		}
+		/// for multi node message, concatenate array before send
+	}
+
 
 	#newUserBroadcast ( clientId ) {
         console.log(`ServerManager - #newUserBroadcast ${clientId}`);
@@ -155,16 +204,32 @@ export default class ServerManager {
 		}
 	}
 
-	#newUserUpdateTransforms ( clientId ) {
-		console.log(`ServerManager - #newUserUpdateTransforms ${clientId}`);
+	#updateCameraBroadcast ( clientId ) {
+
+	}
+
+	#newUserUpdateCameras ( clientId ) {
+		console.log(`ServerManager - #newUserUpdateCameras ${clientId}`);
 
 		const socket = this.#clientsManager.getSocket(clientId);
 
-		for ( const {name, matrix} of this.#sceneDescriptor.nodesData ) {
-			const nodes = [{name, matrix}];
-			socket.send(this.#messageUpdateTransform(this.#serverId, nodes));
+		for ( const {viewMatrix} of this.#clientsManager.clientsData ) {
+			// console.log(data)
+			socket.send(this.#messageUpdateCamera(this.#serverId, viewMatrix.toArray()));
 		}
-		/// for multi node message, concatenate array before send
+	}
+
+	#messageUpdateCamera ( clientId, viewMatrix ) {
+		console.log(`ServerManager - #messageUpdateCamera ${clientId}`);
+		console.log(viewMatrix)
+		const messageData = {
+			senderId: clientId,
+			command: Commands.UPDATE_CAMERA,
+			viewMatrix: viewMatrix,
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
 	}
 
 	#messageUpdateTransform ( clientId, nodes ) {
@@ -173,6 +238,32 @@ export default class ServerManager {
 		const messageData = {
 			senderId: clientId,
 			command: Commands.UPDATE_TRANSFORM,
+			nodes: nodes,
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageStartTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #messageStartTransform ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.START_TRANSFORM,
+			nodes: nodes,
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageEndTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #messageEndTransform ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.END_TRANSFORM,
 			nodes: nodes,
 		}
 		const message = JSON.stringify(messageData);
@@ -245,6 +336,89 @@ export default class ServerManager {
 		return message;
 	}
 
+	#messageStartPointer ( clientId ) {
+        console.log(`ServerManager - #messageStartPointer ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.START_POINTER,
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageEndPointer ( clientId ) {
+        console.log(`ServerManager - #messageEndPointer ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.END_POINTER,
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageUpdatePointer ( clientId, pointer ) {
+        console.log(`ServerManager - #messageUpdatePointer ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.UPDATE_POINTER,
+			pointer: pointer
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageAddMarker ( clientId, marker ) {
+		console.log(`ServerManager - #messageAddMarker ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.ADD_MARKER,
+			marker: {
+				id: marker.id,
+				matrix: marker.matrix,
+			}
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageDeleteMarker ( clientId, marker ) {
+		console.log(`ServerManager - #messageDeleteMarker ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.ADD_MARKER,
+			marker: {
+				id: marker.id,
+			}
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
+
+	#messageUpdateMarker ( clientId, marker ) {
+		console.log(`ServerManager - #messageDeleteMarker ${clientId}`);
+		
+		const messageData = {
+			senderId: clientId,
+			command: Commands.ADD_MARKER,
+			marker: {
+				id: marker.id,
+				matrix: marker.matrix,
+			}
+		}
+		const message = JSON.stringify(messageData);
+
+		return message;
+	}
 
 
 

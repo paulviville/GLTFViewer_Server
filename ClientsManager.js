@@ -21,7 +21,7 @@ export default class ClientsManager {
         const client = this.#clients.newElement();
         this.#clients.ref(client);
 
-		this.#viewMatrix = new Matrix4();
+		this.#viewMatrix[client] = new Matrix4();
 
         return client;
     }
@@ -58,7 +58,7 @@ export default class ClientsManager {
 		for( const client of this.#clients.elements() ) {
 			yield {
 				client: client,
-				socket: this.socket[client],
+				socket: this.#socket[client],
 				viewMatrix: this.#viewMatrix[client],
 			};
 		}

@@ -11,6 +11,8 @@ export default class Commands {
 
     static SELECT = "SELECT";
     static DESELECT = "DESELECT";
+    static START_TRANSFORM = "START_TRANSFORM";
+    static END_TRANSFORM = "END_TRANSFORM";
     static UPDATE_TRANSFORM = "UPDATE_TRANSFORM";
 
     static ADD_MARKER = "ADD_MARKER";
