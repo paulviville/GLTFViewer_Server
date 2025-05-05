@@ -27,7 +27,7 @@ export default class ServerManager {
 		const clientId = this.#clientsManager.createClient();
 		this.#clientsManager.setSocket(clientId, socket);
 
-		this.#newUserBroadcast(clientId);
+		this.#broadcastNewUser(clientId);
 		this.#newUserUpdateTransforms(clientId);
 		this.#newUserUpdateCameras(clientId);
 
@@ -89,7 +89,7 @@ export default class ServerManager {
         console.log(`ServerManager - #handleClose ${clientId}`);
 
 		this.#clientsManager.removeClient(clientId);
-		this.#removeUserBroadcast(clientId);
+		this.#broadcastRemoveUser(clientId);
 	}
 
 	#handleSelect ( clientId, nodes ) {
@@ -105,13 +105,13 @@ export default class ServerManager {
 
 		/// if accepted, responded to ALL with selected nodes and selector userId
 		/// if multiselection: broadcast accepted nodes only
-		this.#selectBroadcast(clientId, nodes);
+		this.#broadcastSelect(clientId, nodes);
 	}
 
 	#handleDeselect ( clientId, nodes ) {
         console.log(`ServerManager - #handleDeselect ${clientId, nodes[0].name}`);
 	
-		this.#deselectBroadcast(clientId, nodes);	
+		this.#broadcastDeselect(clientId, nodes);	
 	}
 
 	#handleUpdateCamera ( clientId, viewMatrix ) {
@@ -146,8 +146,8 @@ export default class ServerManager {
 	}
 
 
-	#newUserBroadcast ( clientId ) {
-        console.log(`ServerManager - #newUserBroadcast ${clientId}`);
+	#broadcastNewUser ( clientId ) {
+        console.log(`ServerManager - #broadcastNewUser ${clientId}`);
 		const socket = this.#clientsManager.getSocket(clientId);
 		socket.send(this.#messageSetUser(clientId));
 
@@ -161,16 +161,16 @@ export default class ServerManager {
 		}
 	}
 
-	#removeUserBroadcast ( clientId ) {
-        console.log(`ServerManager - #removeUserBroadcast ${clientId}`);
+	#broadcastRemoveUser ( clientId ) {
+        console.log(`ServerManager - #broadcastRemoveUser ${clientId}`);
 		for ( const clientId1 in this.#clientsManager.clients ) {
 			const socket = this.#clientsManager.getSocket(clientId1);
 			socket.send(this.#messageRemoveUser(clientId));
 		}
 	}
 
-	#selectBroadcast ( clientId, nodes ) {
-		console.log(`ServerManager - #selectBroadcast ${clientId}`);
+	#broadcastSelect ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastSelect ${clientId}`);
 
 		const message = this.#messageSelect(clientId, nodes);
 
@@ -181,8 +181,8 @@ export default class ServerManager {
 		}
 	}
 
-	#deselectBroadcast ( clientId, nodes ) {
-		console.log(`ServerManager - #selectBroadcast ${clientId}`);
+	#broadcastDeselect ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastDeselect ${clientId}`);
 		const message = this.#messageDeselect(clientId, nodes);
 
 		for ( const client of this.#clientsManager.clients ) {
