@@ -1,5 +1,5 @@
 import AttributeContainer from "./AttributesContainer.js";
-import { Matrix4 } from "./three.module.js";
+import { Matrix4, Vector3 } from "./three.module.js";
 
 export default class ClientsManager {
 	/// unique id Uint32 max value
@@ -8,6 +8,8 @@ export default class ClientsManager {
     #clients = new AttributeContainer()
     #socket = this.#clients.addAttribute("socket");
     #viewMatrix = this.#clients.addAttribute("viewMatrix");
+    #pointer = this.#clients.addAttribute("pointer");
+    #markers = this.#clients.addAttribute("markers");
 
 
 
@@ -22,6 +24,8 @@ export default class ClientsManager {
         this.#clients.ref(client);
 
 		this.#viewMatrix[client] = new Matrix4();
+		this.#pointer[client] = null;
+        this.#markers[client] = []; /// change to dynamic allocation markerContainer
 
         return client;
     }
@@ -48,7 +52,19 @@ export default class ClientsManager {
         this.#viewMatrix[clientId].copy(viewMatrix);
     }
 
-	*#clientsIterator ( ) {
+    setPointerStatus ( clientId, status ) {
+        if( status ) {
+            this.#pointer[clientId] = {
+                origin: new Vector3(),
+                end: new Vector3(),
+            };
+        }
+        else {
+            this.#pointer[clientId] = null;
+        }        
+    }
+
+    *#clientsIterator ( ) {
 		for( const client of this.#clients.elements() ) {
 			yield client;
 		}
@@ -59,7 +75,9 @@ export default class ClientsManager {
 			yield {
 				client: client,
 				socket: this.#socket[client],
-				viewMatrix: this.#viewMatrix[client],
+				viewMatrix: this.#viewMatrix[client].clone(),
+                pointer: this.#pointer[client], /// add cloning logic with nullish logic
+                markers: [...this.#markers[client]],
 			};
 		}
 	}

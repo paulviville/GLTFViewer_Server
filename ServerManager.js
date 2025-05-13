@@ -27,9 +27,7 @@ export default class ServerManager {
 		const clientId = this.#clientsManager.createClient();
 		this.#clientsManager.setSocket(clientId, socket);
 
-		this.#broadcastNewUser(clientId);
-		this.#newUserUpdateTransforms(clientId);
-		this.#newUserUpdateCameras(clientId);
+		this.#handleNewUser(clientId);
 
 		socket.on('message', ( message ) => { this.#handleMessage(clientId, message); });
 		socket.on('close', ( ) => { this.#handleClose(clientId); });
@@ -59,6 +57,7 @@ export default class ServerManager {
 				console.log(messageData.command);
 				break;
 			case Commands.UPDATE_CAMERA:
+				this.#handleUpdateCamera(messageData.senderId, messageData.viewMatrix);
 				console.log(messageData.command);
 				break;
 			case Commands.START_POINTER:
@@ -83,6 +82,16 @@ export default class ServerManager {
 				console.log(messageData.command);
 				break;
 		}
+	}
+
+	#handleNewUser ( clientId ) {
+        console.log(`ServerManager - #handleNewUser ${clientId}`);
+
+		const socket = this.#clientsManager.getSocket(clientId);
+		socket.send(this.#messageSetUser(clientId));
+
+		this.#newUserUpdateData(clientId);
+		this.#broadcastNewUser(clientId);
 	}
 
 	#handleClose( clientId ) {
@@ -111,14 +120,30 @@ export default class ServerManager {
 	#handleDeselect ( clientId, nodes ) {
         console.log(`ServerManager - #handleDeselect ${clientId, nodes[0].name}`);
 	
+		const node = this.#sceneDescriptor.getNode(nodes[0].name);
+		this.#sceneDescriptor.deselectNode(node);
+
 		this.#broadcastDeselect(clientId, nodes);	
 	}
 
 	#handleUpdateCamera ( clientId, viewMatrix ) {
+        console.log(`ServerManager - #handleUpdateCamera ${clientId}`);
+
+		this.#clientsManager.setviewMatrix(clientId, viewMatrix);
+		
+		this.#broadcastUpdateCamera(clientId);
+	}
+
+	#handleStartPointer ( clientId ) {
+
+	}
+
+	#handleUpdatePointer ( clientId, pointer ) {
+        console.log(`ServerManager - #handleUpdatePointer ${clientId}`);
 		
 	}
 
-	#handleUpdatePointer ( clientId, origin, end ) {
+	#handleEndPointer ( clientId ) {
 		
 	}
 
@@ -130,7 +155,78 @@ export default class ServerManager {
 		
 		this.#sceneDescriptor.setMatrix(node, matrix);
 
-		this.#updateTransformBroadcast(clientId, nodes);
+		this.#broadcastUpdateTransform(clientId, nodes);
+	}
+
+	#broadcast ( message = {}, excludedId = undefined ) {
+		for ( const {client, socket} of this.#clientsManager.clientsData ) {
+			if( excludedId !== undefined && client == excludedId ) 
+				continue;
+
+			socket.send(message);
+		}
+	}
+
+	#broadcastNewUser ( clientId ) {
+        console.log(`ServerManager - #broadcastNewUser ${clientId}`);
+
+		const message = this.#messageNewUser(clientId);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastRemoveUser ( clientId ) {
+        console.log(`ServerManager - #broadcastRemoveUser ${clientId}`);
+
+		const message = this.#messageRemoveUser(clientId);
+		this.#broadcast(message);
+	}
+
+	#broadcastSelect ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastSelect ${clientId}`);
+
+		const message = this.#messageSelect(clientId, nodes);
+		this.#broadcast(message);
+	}
+
+	#broadcastDeselect ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastDeselect ${clientId}`);
+
+		const message = this.#messageDeselect(clientId, nodes);
+		this.#broadcast(message);
+	}
+
+	#broadcastUpdateTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastUpdateTransform ${clientId}`);
+		
+		const message = this.#messageUpdateTransform(clientId, nodes);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastUpdateCamera ( clientId ) {
+		console.log(`ServerManager - #broadcastUpdateCamera ${clientId}`);
+		
+		const viewMatrix = this.#clientsManager.getviewMatrix(clientId);
+		const message = this.#messageUpdateCamera(clientId, viewMatrix);
+		this.#broadcast(message, clientId);
+	}
+
+	#newUserUpdateData ( clientId ) {
+		this.#newUserUpdateUsers(clientId);
+		this.#newUserUpdateCameras(clientId);
+		this.#newUserUpdatePointers(clientId);
+		// this.#newUserUpdateMarkers(clientId);
+		this.#newUserUpdateTransforms(clientId);
+	}
+
+	#newUserUpdateUsers ( clientId ) {
+		const socket = this.#clientsManager.getSocket(clientId);
+
+		for ( const clientId1 in this.#clientsManager.clients ) {
+			if( clientId1 == clientId ) 
+				continue;
+
+			socket.send(this.#messageNewUser(clientId1));
+		}
 	}
 
 	#newUserUpdateTransforms ( clientId ) {
@@ -140,72 +236,10 @@ export default class ServerManager {
 
 		for ( const {name, matrix} of this.#sceneDescriptor.nodesData ) {
 			const nodes = [{name, matrix: matrix.toArray()}];
-			socket.send(this.#messageUpdateTransform(this.#serverId, nodes));
+			const message = this.#messageUpdateTransform(this.#serverId, nodes);
+			socket.send(message);
 		}
 		/// for multi node message, concatenate array before send
-	}
-
-
-	#broadcastNewUser ( clientId ) {
-        console.log(`ServerManager - #broadcastNewUser ${clientId}`);
-		const socket = this.#clientsManager.getSocket(clientId);
-		socket.send(this.#messageSetUser(clientId));
-
-		for ( const otherCliendId in this.#clientsManager.clients ) {
-			if( otherCliendId == clientId ) continue;
-
-			const otherSocket = this.#clientsManager.getSocket(otherCliendId);
-			
-			socket.send(this.#messageNewUser(otherCliendId));
-			otherSocket.send(this.#messageNewUser(clientId));
-		}
-	}
-
-	#broadcastRemoveUser ( clientId ) {
-        console.log(`ServerManager - #broadcastRemoveUser ${clientId}`);
-		for ( const clientId1 in this.#clientsManager.clients ) {
-			const socket = this.#clientsManager.getSocket(clientId1);
-			socket.send(this.#messageRemoveUser(clientId));
-		}
-	}
-
-	#broadcastSelect ( clientId, nodes ) {
-		console.log(`ServerManager - #broadcastSelect ${clientId}`);
-
-		const message = this.#messageSelect(clientId, nodes);
-
-		for ( const client of this.#clientsManager.clients ) {
-			console.log(client);
-			const socket = this.#clientsManager.getSocket(client);
-			socket.send(message);
-		}
-	}
-
-	#broadcastDeselect ( clientId, nodes ) {
-		console.log(`ServerManager - #broadcastDeselect ${clientId}`);
-		const message = this.#messageDeselect(clientId, nodes);
-
-		for ( const client of this.#clientsManager.clients ) {
-			const socket = this.#clientsManager.getSocket(client);
-			socket.send(message);
-		}
-	}
-
-	#updateTransformBroadcast ( clientId, nodes ) {
-		console.log(`ServerManager - #updateTransformBroadcast ${clientId}`);
-		
-		const message = this.#messageUpdateTransform(clientId, nodes);
-
-		for ( const otherCliendId of this.#clientsManager.clients ) {
-			if( otherCliendId == clientId ) continue;
-
-			const socket = this.#clientsManager.getSocket(otherCliendId);
-			socket.send(message);
-		}
-	}
-
-	#updateCameraBroadcast ( clientId ) {
-
 	}
 
 	#newUserUpdateCameras ( clientId ) {
@@ -213,15 +247,43 @@ export default class ServerManager {
 
 		const socket = this.#clientsManager.getSocket(clientId);
 
-		for ( const {viewMatrix} of this.#clientsManager.clientsData ) {
-			// console.log(data)
-			socket.send(this.#messageUpdateCamera(this.#serverId, viewMatrix.toArray()));
+		for ( const {client, viewMatrix} of this.#clientsManager.clientsData ) {
+			if( client == clientId ) 
+				continue;
+			
+			socket.send(this.#messageUpdateCamera(client, viewMatrix.toArray()));
 		}
+	}
+
+	#newUserUpdatePointers ( clientId ) {
+		console.log(`ServerManager - #newUserUpdatePointers ${clientId}`);
+
+		const socket = this.#clientsManager.getSocket(clientId);
+
+		for ( const {client, pointer} of this.#clientsManager.clientsData ) {
+			if( client == clientId ) 
+				continue;
+
+			if( pointer === null )
+				continue;
+
+			const pointerArrays = {
+				origin: pointer.origin.toArray(),
+				end: pointer.end.toArray(),
+			}
+
+			socket.send(this.#messageStartPointer(clientId));
+			socket.send(this.#messageUpdatePointer(clientId, pointerArrays));
+		}
+	}
+
+	#newUserUpdateMarkers ( clientId ) {
+		
 	}
 
 	#messageUpdateCamera ( clientId, viewMatrix ) {
 		console.log(`ServerManager - #messageUpdateCamera ${clientId}`);
-		console.log(viewMatrix)
+
 		const messageData = {
 			senderId: clientId,
 			command: Commands.UPDATE_CAMERA,
