@@ -53,7 +53,7 @@ export default class ClientsManager {
     }
 
     setPointerStatus ( clientId, status ) {
-        if( status ) {
+        if ( status ) {
             this.#pointer[clientId] = {
                 origin: new Vector3(),
                 end: new Vector3(),
@@ -62,6 +62,24 @@ export default class ClientsManager {
         else {
             this.#pointer[clientId] = null;
         }        
+    }
+
+    setPointer ( clientId, pointer ) {
+        this.#pointer[clientId].origin.copy(pointer.origin);
+        this.#pointer[clientId].end.copy(pointer.end);
+    }
+
+    getPointer ( clientId ) {
+        if ( this.#pointer[clientId] === null ) {
+            return null;
+        }
+
+        const pointer = {
+            origin: this.#pointer[clientId].origin.clone(),
+            end: this.#pointer[clientId].end.clone(),
+        }
+
+        return pointer;
     }
 
     *#clientsIterator ( ) {
@@ -75,10 +93,11 @@ export default class ClientsManager {
 			yield {
 				client: client,
 				socket: this.#socket[client],
-				viewMatrix: this.#viewMatrix[client].clone(),
-                pointer: this.#pointer[client], /// add cloning logic with nullish logic
+				viewMatrix: this.getviewMatrix(client),
+                pointer: this.getPointer(client),
                 markers: [...this.#markers[client]],
 			};
+            /// create getters with cloning
 		}
 	}
 

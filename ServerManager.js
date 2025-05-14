@@ -3,6 +3,7 @@ import ClientsManager from "./ClientsManager.js";
 import Commands from "./Commands.js";
 import SceneDescriptor from "./SceneDescriptor.js";
 import { Matrix4 } from "./three.module.js";
+import { Vector3 } from "./three/three.module.js";
 
 
 export default class ServerManager {
@@ -40,7 +41,7 @@ export default class ServerManager {
 		// console.log(messageData);
 
 
-		switch (messageData.command) {
+		switch ( messageData.command ) {
 			case Commands.SELECT:
 				this.#handleSelect(messageData.senderId, messageData.nodes);
 				break;
@@ -48,26 +49,25 @@ export default class ServerManager {
 				this.#handleDeselect(messageData.senderId, messageData.nodes);
 				break;
 			case Commands.START_TRANSFORM:
-				console.log(messageData.command);
+				this.#handleStartTransform(messageData.senderId, messageData.nodes);
 				break;
 			case Commands.UPDATE_TRANSFORM:
 				this.#handleUpdateTransform(messageData.senderId, messageData.nodes);
 				break;
 			case Commands.END_TRANSFORM:
-				console.log(messageData.command);
+				this.#handleEndTransform(messageData.senderId, messageData.nodes);
 				break;
 			case Commands.UPDATE_CAMERA:
 				this.#handleUpdateCamera(messageData.senderId, messageData.viewMatrix);
-				console.log(messageData.command);
 				break;
 			case Commands.START_POINTER:
-				console.log(messageData.command);
+				this.#handleStartPointer(clientId);
 				break;
 			case Commands.UPDATE_POINTER:
-				console.log(messageData.command);
+				this.#handleUpdatePointer(clientId, messageData.pointer);
 				break;
 			case Commands.END_POINTER:
-				console.log(messageData.command);
+				this.#handleEndPointer(clientId);
 				break;
 			case Commands.ADD_MARKER:
 				console.log(messageData.command);
@@ -135,16 +135,35 @@ export default class ServerManager {
 	}
 
 	#handleStartPointer ( clientId ) {
+        console.log(`ServerManager - #handleStartPointer ${clientId}`);
 
+		this.#clientsManager.setPointerStatus(clientId, true);
+		this.#broadcastStartPointer(clientId);
 	}
 
 	#handleUpdatePointer ( clientId, pointer ) {
         console.log(`ServerManager - #handleUpdatePointer ${clientId}`);
 		
+		this.#clientsManager.setPointer(clientId, {
+			origin: new Vector3().fromArray(pointer.origin),
+			end: new Vector3().fromArray(pointer.end),
+		});
+		this.#broadcastUpdatePointer(clientId);
 	}
 
 	#handleEndPointer ( clientId ) {
+        console.log(`ServerManager - #handleEndPointer ${clientId}`);
+
+		this.#clientsManager.setPointerStatus(clientId, false);
+		this.#broadcastEndPointer(clientId);
+	}
+
+	#handleStartTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #handleStartTransform ${clientId}`);
 		
+		/// logic for history
+
+		this.#broadcastStartTransform(clientId, nodes);
 	}
 
 	#handleUpdateTransform ( clientId, nodes ) {
@@ -156,6 +175,14 @@ export default class ServerManager {
 		this.#sceneDescriptor.setMatrix(node, matrix);
 
 		this.#broadcastUpdateTransform(clientId, nodes);
+	}
+
+	#handleEndTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #handleEndTransform ${clientId}`);
+		
+		/// logic for history
+
+		this.#broadcastEndTransform(clientId, nodes);
 	}
 
 	#broadcast ( message = {}, excludedId = undefined ) {
@@ -195,10 +222,24 @@ export default class ServerManager {
 		this.#broadcast(message);
 	}
 
+	#broadcastStartTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastStartTransform ${clientId}`);
+		
+		const message = this.#messageStartTransform(clientId, nodes);
+		this.#broadcast(message, clientId);
+	}
+
 	#broadcastUpdateTransform ( clientId, nodes ) {
 		console.log(`ServerManager - #broadcastUpdateTransform ${clientId}`);
 		
 		const message = this.#messageUpdateTransform(clientId, nodes);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastEndTransform ( clientId, nodes ) {
+		console.log(`ServerManager - #broadcastEndTransform ${clientId}`);
+		
+		const message = this.#messageEndTransform(clientId, nodes);
 		this.#broadcast(message, clientId);
 	}
 
@@ -207,6 +248,33 @@ export default class ServerManager {
 		
 		const viewMatrix = this.#clientsManager.getviewMatrix(clientId);
 		const message = this.#messageUpdateCamera(clientId, viewMatrix);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastStartPointer ( clientId ) {
+		console.log(`ServerManager - #broadcastStartPointer ${clientId}`);
+
+		const message = this.#messageStartPointer(clientId);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastUpdatePointer ( clientId ) {
+		console.log(`ServerManager - #broadcastUpdatePointer ${clientId}`);
+
+		const pointer = this.#clientsManager.getPointer(clientId);
+		const pointerArrays = {
+			origin: pointer.origin.toArray(),
+			end: pointer.end.toArray(),
+		}
+
+		const message = this.#messageUpdatePointer(clientId, pointerArrays);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastEndPointer ( clientId ) {
+		console.log(`ServerManager - #broadcastEndPointer ${clientId}`);
+
+		const message = this.#messageEndPointer(clientId);
 		this.#broadcast(message, clientId);
 	}
 
