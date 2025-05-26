@@ -97,6 +97,17 @@ export default class ServerManager {
 	#handleClose( clientId ) {
         console.log(`ServerManager - #handleClose ${clientId}`);
 
+		for ( const nodeId of this.#clientsManager.selectedNodes(clientId) ) {
+			console.log(nodeId);
+			const node = this.#sceneDescriptor.getNode(nodeId);
+			this.#sceneDescriptor.deselectNode(node);
+			
+			this.#clientsManager.deselectNode(clientId, nodeId);
+
+			/// handling multiselection and deselection will clean this up
+			this.#broadcastDeselect(clientId, [{name: nodeId}]);
+		}
+
 		this.#clientsManager.removeClient(clientId);
 		this.#broadcastRemoveUser(clientId);
 	}
@@ -115,6 +126,7 @@ export default class ServerManager {
 		/// if accepted, responded to ALL with selected nodes and selector userId
 		/// if multiselection: broadcast accepted nodes only
 		this.#broadcastSelect(clientId, nodes);
+		this.#clientsManager.selectNode(clientId, nodes[0].name);
 	}
 
 	#handleDeselect ( clientId, nodes ) {
@@ -124,12 +136,13 @@ export default class ServerManager {
 		this.#sceneDescriptor.deselectNode(node);
 
 		this.#broadcastDeselect(clientId, nodes);	
+		this.#clientsManager.deselectNode(clientId, nodes[0].name);
 	}
 
-	#handleUpdateCamera ( clientId, viewMatrix ) {
+	#handleUpdateCamera ( clientId, matrix ) {
         console.log(`ServerManager - #handleUpdateCamera ${clientId}`);
 
-		this.#clientsManager.setviewMatrix(clientId, viewMatrix);
+		this.#clientsManager.setviewMatrix(clientId, new Matrix4().fromArray(matrix));
 		
 		this.#broadcastUpdateCamera(clientId);
 	}
@@ -247,7 +260,7 @@ export default class ServerManager {
 		console.log(`ServerManager - #broadcastUpdateCamera ${clientId}`);
 		
 		const viewMatrix = this.#clientsManager.getviewMatrix(clientId);
-		const message = this.#messageUpdateCamera(clientId, viewMatrix);
+		const message = this.#messageUpdateCamera(clientId, viewMatrix.toArray());
 		this.#broadcast(message, clientId);
 	}
 

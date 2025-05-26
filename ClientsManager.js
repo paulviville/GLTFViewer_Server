@@ -10,7 +10,7 @@ export default class ClientsManager {
     #viewMatrix = this.#clients.addAttribute("viewMatrix");
     #pointer = this.#clients.addAttribute("pointer");
     #markers = this.#clients.addAttribute("markers");
-
+	#selected = this.#clients.addAttribute("selected");
 
 
     constructor ( ) {
@@ -26,6 +26,7 @@ export default class ClientsManager {
 		this.#viewMatrix[client] = new Matrix4();
 		this.#pointer[client] = null;
         this.#markers[client] = []; /// change to dynamic allocation markerContainer
+		this.#selected[client] = new Set();
 
         return client;
     }
@@ -40,6 +41,8 @@ export default class ClientsManager {
 
     removeClient ( client ) {
         console.log(`ClientsManager - removeClient (${client})`);
+
+		/// clear data
 
         this.#clients.unref(client); 
     }
@@ -82,20 +85,35 @@ export default class ClientsManager {
         return pointer;
     }
 
+	selectNode ( clientId, nodeId ) {
+		this.#selected[clientId].add(nodeId);
+	}
+
+	deselectNode ( clientId, nodeId ) {
+		this.#selected[clientId].delete(nodeId);
+	}
+
+	*selectedNodes ( clientId ) {
+		for ( const nodeId of this.#selected[clientId] ) {
+			yield nodeId;
+		}
+	}
+
     *#clientsIterator ( ) {
-		for( const client of this.#clients.elements() ) {
+		for ( const client of this.#clients.elements() ) {
 			yield client;
 		}
 	}
 
 	*#clientsDataIterator ( ) {
-		for( const client of this.#clients.elements() ) {
+		for ( const client of this.#clients.elements() ) {
 			yield {
 				client: client,
 				socket: this.#socket[client],
 				viewMatrix: this.getviewMatrix(client),
                 pointer: this.getPointer(client),
                 markers: [...this.#markers[client]],
+				selected: [...this.#selected[client]],
 			};
             /// create getters with cloning
 		}
