@@ -24,7 +24,11 @@ export default class ClientsManager {
         this.#clients.ref(client);
 
 		this.#viewMatrix[client] = new Matrix4();
-		this.#pointer[client] = null;
+		this.#pointer[client] = {
+            origin: new Vector3(),
+            end: new Vector3(),
+            on: false,
+        };
         this.#markers[client] = []; /// change to dynamic allocation markerContainer
 		this.#selected[client] = new Set();
 
@@ -56,15 +60,9 @@ export default class ClientsManager {
     }
 
     setPointerStatus ( clientId, status ) {
-        if ( status ) {
-            this.#pointer[clientId] = {
-                origin: new Vector3(),
-                end: new Vector3(),
-            };
-        }
-        else {
-            this.#pointer[clientId] = null;
-        }        
+        this.#pointer[clientId].origin.set(0,0,0);
+        this.#pointer[clientId].end.set(0,0,0);
+        this.#pointer[clientId].on = status;
     }
 
     setPointer ( clientId, pointer ) {
@@ -73,13 +71,10 @@ export default class ClientsManager {
     }
 
     getPointer ( clientId ) {
-        if ( this.#pointer[clientId] === null ) {
-            return null;
-        }
-
         const pointer = {
             origin: this.#pointer[clientId].origin.clone(),
             end: this.#pointer[clientId].end.clone(),
+            on: this.#pointer.on,
         }
 
         return pointer;

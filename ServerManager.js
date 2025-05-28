@@ -353,8 +353,8 @@ export default class ServerManager {
 				end: pointer.end.toArray(),
 			}
 
-			socket.send(this.#messageStartPointer(clientId));
-			socket.send(this.#messageUpdatePointer(clientId, pointerArrays));
+			socket.send(this.#messageStartPointer(client));
+			socket.send(this.#messageUpdatePointer(client, pointerArrays));
 		}
 	}
 
