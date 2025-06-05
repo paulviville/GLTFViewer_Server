@@ -70,13 +70,13 @@ export default class ServerManager {
 				this.#handleEndPointer(clientId);
 				break;
 			case Commands.ADD_MARKER:
-				console.log(messageData.command);
+				this.#handleAddMarker(messageData.senderId, messageData.marker);
 				break;
 			case Commands.UPDATE_MARKER:
 				console.log(messageData.command);
 				break;
 			case Commands.DELETE_MARKER:
-				console.log(messageData.command);
+				this.#handleDeleteMarker(messageData.senderId, messageData.marker);
 				break;
 			default:
 				console.log(messageData.command);
@@ -198,6 +198,33 @@ export default class ServerManager {
 		this.#broadcastEndTransform(clientId, nodes);
 	}
 
+	#handleAddMarker ( clientId, markerData ) {
+		console.log(`ServerManager - #handleAddMarker ${clientId}`);
+
+		const marker = {
+			id: markerData.id,
+			origin: new Vector3(...markerData.origin),
+			end: new Vector3(...markerData.end),
+		}
+
+		/// clients manager logic
+
+		this.#broadcastAddMarker(clientId, marker);
+	}
+
+
+	#handleDeleteMarker ( clientId, markerData ) {
+		console.log(`ServerManager - #handleDeleteMarker ${clientId}`);
+
+		const marker = {
+			id: markerData.id,
+		}
+
+		/// clients manager logic
+
+		this.#broadcastDeleteMarker(clientId, marker);
+	}
+
 	#broadcast ( message = {}, excludedId = undefined ) {
 		for ( const {client, socket} of this.#clientsManager.clientsData ) {
 			if( excludedId !== undefined && client == excludedId ) 
@@ -288,6 +315,34 @@ export default class ServerManager {
 		console.log(`ServerManager - #broadcastEndPointer ${clientId}`);
 
 		const message = this.#messageEndPointer(clientId);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastAddMarker ( clientId, marker ) {
+		console.log(`ServerManager - #broadcastAddMarker ${clientId}`);
+		
+		const markerArrays = {
+			id: marker.id,
+			origin: marker.origin.toArray(),
+			end: marker.end.toArray(),
+			// annotation: marker.annotation,
+			// color: marker.color.toArray()
+		}
+
+		const message = this.#messageAddMarker(clientId, markerArrays);
+		this.#broadcast(message, clientId);
+	}
+
+	#broadcastDeleteMarker ( clientId, marker ) {
+		console.log(`ServerManager - #broadcastAddMarker ${clientId}`);
+		
+		const markerArrays = {
+			id: marker.id,
+			// annotation: marker.annotation,
+			// color: marker.color.toArray()
+		}
+
+		const message = this.#messageDeleteMarker(clientId, markerArrays);
 		this.#broadcast(message, clientId);
 	}
 
@@ -524,7 +579,8 @@ export default class ServerManager {
 			command: Commands.ADD_MARKER,
 			marker: {
 				id: marker.id,
-				matrix: marker.matrix,
+				origin: marker.origin,
+                end: marker.end,
 			}
 		}
 		const message = JSON.stringify(messageData);
@@ -537,7 +593,7 @@ export default class ServerManager {
 		
 		const messageData = {
 			senderId: clientId,
-			command: Commands.ADD_MARKER,
+			command: Commands.DELETE_MARKER,
 			marker: {
 				id: marker.id,
 			}
