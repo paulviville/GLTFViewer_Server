@@ -29,7 +29,7 @@ export default class ClientsManager {
             end: new Vector3(),
             on: false,
         };
-        this.#markers[client] = []; /// change to dynamic allocation markerContainer
+        this.#markers[client] = new Map();
 		this.#selected[client] = new Set();
 
         return client;
@@ -80,6 +80,17 @@ export default class ClientsManager {
         return pointer;
     }
 
+    addMarker ( clientId, marker ) {
+        console.log(this.#markers[clientId]);
+        this.#markers[clientId].set(marker.id, marker);
+        console.log(this.#markers[clientId]);
+    }
+
+    deleteMarker ( clientId, marker ) {
+        this.#markers[clientId].delete(marker.id);
+        console.log(this.#markers[clientId]);
+    }
+
 	selectNode ( clientId, nodeId ) {
 		this.#selected[clientId].add(nodeId);
 	}
@@ -107,7 +118,7 @@ export default class ClientsManager {
 				socket: this.#socket[client],
 				viewMatrix: this.getviewMatrix(client),
                 pointer: this.getPointer(client),
-                markers: [...this.#markers[client]],
+                markers: [...this.#markers[client].values()],
 				selected: [...this.#selected[client]],
 			};
             /// create getters with cloning

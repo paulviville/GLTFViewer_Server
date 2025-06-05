@@ -207,7 +207,7 @@ export default class ServerManager {
 			end: new Vector3(...markerData.end),
 		}
 
-		/// clients manager logic
+		this.#clientsManager.addMarker(clientId, marker);
 
 		this.#broadcastAddMarker(clientId, marker);
 	}
@@ -220,7 +220,7 @@ export default class ServerManager {
 			id: markerData.id,
 		}
 
-		/// clients manager logic
+		this.#clientsManager.deleteMarker(clientId, marker);
 
 		this.#broadcastDeleteMarker(clientId, marker);
 	}
@@ -350,7 +350,7 @@ export default class ServerManager {
 		this.#newUserUpdateUsers(clientId);
 		this.#newUserUpdateCameras(clientId);
 		this.#newUserUpdatePointers(clientId);
-		// this.#newUserUpdateMarkers(clientId);
+		this.#newUserUpdateMarkers(clientId);
 		this.#newUserUpdateTransforms(clientId);
 	}
 
@@ -414,7 +414,24 @@ export default class ServerManager {
 	}
 
 	#newUserUpdateMarkers ( clientId ) {
-		
+		console.log(`ServerManager - #newUserUpdateMarkers ${clientId}`);
+
+		const socket = this.#clientsManager.getSocket(clientId);
+
+		for ( const {client, markers} of this.#clientsManager.clientsData ) {
+			if( client == clientId ) 
+				continue;
+
+			for ( const marker of markers ) {
+				console.log(marker);
+				const markerArrays = {
+					id: marker.id,
+					origin: marker.origin.toArray(),
+					end: marker.end.toArray(),
+				}
+				socket.send(this.#messageAddMarker(client, markerArrays));
+			}
+		}
 	}
 
 	#messageUpdateCamera ( clientId, viewMatrix ) {
