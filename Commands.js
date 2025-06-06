@@ -1,5 +1,7 @@
 
 export default class Commands {
+    static SERVER_ID = 0xFFFFFFFF;
+    
     static NEW_USER = "NEW_USER";
     static SET_USER = "SET_USER";
     static REMOVE_USER = "REMOVE_USER";

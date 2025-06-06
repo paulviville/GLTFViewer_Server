@@ -2,9 +2,6 @@ import AttributeContainer from "./AttributesContainer.js";
 import { Matrix4, Vector3 } from "./three.module.js";
 
 export default class ClientsManager {
-	/// unique id Uint32 max value
-	static serverId = 0xFFFFFFFF;
-
     #clients = new AttributeContainer()
     #socket = this.#clients.addAttribute("socket");
     #viewMatrix = this.#clients.addAttribute("viewMatrix");
