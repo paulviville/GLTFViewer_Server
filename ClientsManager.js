@@ -1,5 +1,5 @@
 import AttributeContainer from "./AttributesContainer.js";
-import { Matrix4, Vector3 } from "./three.module.js";
+import { Matrix4, Vector3 } from "./three/three.module.js";
 
 export default class ClientsManager {
     #clients = new AttributeContainer()
@@ -78,14 +78,11 @@ export default class ClientsManager {
     }
 
     addMarker ( clientId, marker ) {
-        console.log(this.#markers[clientId]);
         this.#markers[clientId].set(marker.id, marker);
-        console.log(this.#markers[clientId]);
     }
 
     deleteMarker ( clientId, marker ) {
         this.#markers[clientId].delete(marker.id);
-        console.log(this.#markers[clientId]);
     }
 
 	selectNode ( clientId, nodeId ) {
@@ -101,6 +98,12 @@ export default class ClientsManager {
 			yield nodeId;
 		}
 	}
+
+    *markers ( clientId ) {
+        for ( const marker of this.#markers[clientId] ) {
+			yield marker;
+		}
+    }
 
     *#clientsIterator ( ) {
 		for ( const client of this.#clients.elements() ) {

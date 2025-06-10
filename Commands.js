@@ -1,4 +1,3 @@
-
 export default class Commands {
     static SERVER_ID = 0xFFFFFFFF;
     

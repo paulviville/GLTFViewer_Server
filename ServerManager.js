@@ -2,8 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import ClientsManager from "./ClientsManager.js";
 import Commands from "./Commands.js";
 import SceneDescriptor from "./SceneDescriptor.js";
-import { Matrix4 } from "./three.module.js";
-import { Vector3 } from "./three/three.module.js";
+import { Matrix4, Vector3, Color } from "./three/three.module.js";
 import * as Messages from "./Messages.js";
 
 export default class ServerManager {
@@ -219,6 +218,7 @@ export default class ServerManager {
 			id: markerData.id,
 			origin: new Vector3(...markerData.origin),
 			end: new Vector3(...markerData.end),
+			color: new Color(...markerData.color),
 		}
 
 		this.#clientsManager.addMarker(clientId, marker);
@@ -345,6 +345,7 @@ export default class ServerManager {
 					id: marker.id,
 					origin: marker.origin.toArray(),
 					end: marker.end.toArray(),
+					color: marker.color.toArray(),
 				}
 				socket.send(Messages.addMarker(client, markerArrays));
 			}
