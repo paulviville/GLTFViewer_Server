@@ -92,13 +92,13 @@ export default class ServerManager {
 
 		for ( const nodeId of this.#clientsManager.selectedNodes(clientId) ) {
 			console.log(nodeId);
-			const node = this.#sceneDescriptor.getNode(nodeId);
-			this.#sceneDescriptor.deselectNode(node);
+			// const node = this.#sceneDescriptor.getNode(nodeId);
+			this.#sceneDescriptor.deselectNode(nodeId);
 			
 			this.#clientsManager.deselectNode(clientId, nodeId);
 
 			/// handling multiselection and deselection will clean this up
-			const message = Messages.deselect(clientId, [{name: nodeId}]);
+			const message = Messages.deselect(clientId, [{name: nodeId, extras: { nodeId }}]);
 			this.#broadcast(message);
 		}
 
@@ -127,19 +127,20 @@ export default class ServerManager {
 		const message = Messages.select(clientId, nodes);
 		this.#broadcast(message);
 
-		this.#clientsManager.selectNode(clientId, nodes[0].name);
+		this.#clientsManager.selectNode(clientId, nodes[0].extras.nodeId);
 	}
 
 	#handleDeselect ( clientId, nodes ) {
         console.log(`ServerManager - #handleDeselect ${clientId, nodes[0].name}`);
 	
-		const node = this.#sceneDescriptor.getNode(nodes[0].name);
-		this.#sceneDescriptor.deselectNode(node);
+		const nodeId = nodes[0].extras.nodeId;
+		// const node = this.#sceneDescriptor.getNode(nodes[0].name);
+		this.#sceneDescriptor.deselectNode(nodeId);
 
 		const message = Messages.deselect(clientId, nodes);
 		this.#broadcast(message);
 
-		this.#clientsManager.deselectNode(clientId, nodes[0].name);
+		this.#clientsManager.deselectNode(clientId, nodeId);
 	}
 
 	#handleUpdateCamera ( clientId, matrix ) {
@@ -278,7 +279,7 @@ export default class ServerManager {
 
 		for ( const {client} of this.#clientsManager.clientsData ) {
 			for ( const nodeId of this.#clientsManager.selectedNodes(client) ) {
-				socket.send(Messages.select(client, [{name: nodeId}]));
+				socket.send(Messages.select(client, [{name: nodeId, extras: { nodeId }}]));
 			}
 		}
 	}

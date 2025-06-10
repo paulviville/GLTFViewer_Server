@@ -86,6 +86,8 @@ export default class ClientsManager {
     }
 
 	selectNode ( clientId, nodeId ) {
+		console.log(`ClientManager - selectNode ${nodeId}`);
+
 		this.#selected[clientId].add(nodeId);
 	}
 

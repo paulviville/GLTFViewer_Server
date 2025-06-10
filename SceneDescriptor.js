@@ -224,7 +224,6 @@ export default class SceneDescriptor {
             return false;
 
         this.#lockBranch(node);
-        console.log(this.#locked)
         return true;
     }
 
