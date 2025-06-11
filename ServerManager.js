@@ -194,10 +194,10 @@ export default class ServerManager {
 	#handleUpdateTransform ( clientId, nodes ) {
 		console.log(`ServerManager - #handleUpdateTransform ${clientId}`);
 		
-		const node = this.#sceneDescriptor.getNode(nodes[0].name);
+		const nodeId = nodes[0].extras.nodeId;
 		const matrix = new Matrix4().fromArray(nodes[0].matrix);
 		
-		this.#sceneDescriptor.setMatrix(node, matrix);
+		this.#sceneDescriptor.setMatrix(nodeId, matrix);
 
 		const message = Messages.updateTransform(clientId, nodes);
 		this.#broadcast(message, clientId);
@@ -289,8 +289,8 @@ export default class ServerManager {
 
 		const socket = this.#clientsManager.getSocket(clientId);
 
-		for ( const {name, matrix} of this.#sceneDescriptor.nodesData ) {
-			const nodes = [{name, matrix: matrix.toArray()}];
+		for ( const {node, name, matrix} of this.#sceneDescriptor.nodesData ) {
+			const nodes = [{name, matrix: matrix.toArray(), extras: { nodeId: node }}];
 			socket.send(Messages.updateTransform(this.#serverId, nodes));
 		}
 		/// for multi node message, concatenate array before send
