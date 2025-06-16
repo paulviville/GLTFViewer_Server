@@ -16,7 +16,7 @@ const serverManager = new ServerManager(port);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const gltfPath = join(__dirname, 'scene.gltf');
+const gltfPath = join(__dirname, 'files/glTF/ABeautifulGame.gltf');
 const gltf = await fs.readFile(gltfPath, 'utf-8');
 await serverManager.loadFile(gltf);
 

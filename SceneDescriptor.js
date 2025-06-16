@@ -58,8 +58,22 @@ export default class SceneDescriptor {
         this.#nodeMap.set(this.#nodeName[node], node);
         
         this.#nodeMatrix[node] = new THREE.Matrix4();
-        if( nodeData.matrix )
-            this.#nodeMatrix[node].fromArray(nodeData.matrix);
+        const isTRS = nodeData.matrix === undefined && !!(
+			nodeData.translation || nodeData.rotation || nodeData.scale
+		);
+		console.log(`is TRS ${isTRS}`)
+		
+		if ( isTRS ) {
+			const translation = new THREE.Vector3().fromArray(nodeData.translation ?? [0, 0, 0]);
+			const rotation = new THREE.Quaternion().fromArray(nodeData.rotation ?? [0, 0, 0, 1]);
+			const scale = new THREE.Vector3().fromArray(nodeData.scale ?? [1, 1, 1]);	
+
+			this.#nodeMatrix[node].compose(translation, rotation, scale);
+
+		} else {
+			if ( nodeData.matrix )
+            	this.#nodeMatrix[node].fromArray(nodeData.matrix);
+		}
 
         this.#nodeChildren[node] = new Set();
         if( nodeData.children ) {
