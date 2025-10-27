@@ -98,7 +98,9 @@ export default class SceneDescriptor {
         return node;
     }
 	addNode ( nodeData ) { /// cleanup later
-		return this.#addNode( nodeData );
+		const node = this.#addNode( nodeData );
+		this.#locked[node] = 0;
+		return node;
 	} 
 
     #deleteNode ( node ) {
