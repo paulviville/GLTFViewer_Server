@@ -19,4 +19,15 @@ export default class Commands {
     static ADD_MARKER = "ADD_MARKER";
     static DELETE_MARKER = "DELETE_MARKER";
     static UPDATE_MARKER = "UPDATE_MARKER";
+
+    static ADD_PRIMITIVE = "ADD_PRIMITIVE";
+	static Primitives = {
+		Sphere: "Sphere",
+		Cylinder: "Cylinder",
+		Cube: "Cube",
+		Quad: "Quad",
+		Capsule: "Capsule",
+	}
+
+	static LAMBDA = "LAMBDA";
 }

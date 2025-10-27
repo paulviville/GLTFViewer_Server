@@ -36,6 +36,11 @@ export default class ServerManager {
 		// 	console.log(data.command),
 		[Commands.DELETE_MARKER]:
 			( userId, data ) => this.#handleDeleteMarker(userId, data.marker),
+		// [Commands.ADD_PRIMITIVE]:
+			// ( userId, data ) => this.#handleAddPrimitive(userId, data.primitive),
+		[Commands.LAMBDA]:
+			( userId, data ) => this.#handleLambda(userId, data),
+		
 	}
 
 	constructor ( port ) {
@@ -226,6 +231,22 @@ export default class ServerManager {
 
 		const message = Messages.addMarker(clientId, markerData);
 		this.#broadcast(message, clientId);
+	}
+
+	// #handleAddPrimitive ( clientId, primitiveData ) {
+	// 	console.log(`ServerManager - #handleAddPrimitive ${clientId}`);
+	// 	console.log(primitiveData);
+
+	// 	const message = Messages.addMarker(clientId, primitiveData);
+	// 	this.#broadcast(message, clientId);
+	// }
+
+	#handleLambda ( clientId, data ) {
+		console.log(`ServerManager - #handleAddMarker ${clientId}`);
+
+		const message = Messages.lambda( clientId, data );
+
+		this.#broadcast(message, data?.all ? undefined : clientId );
 	}
 
 	#handleDeleteMarker ( clientId, markerData ) {

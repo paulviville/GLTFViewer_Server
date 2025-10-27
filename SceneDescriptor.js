@@ -61,7 +61,6 @@ export default class SceneDescriptor {
         const isTRS = nodeData.matrix === undefined && !!(
 			nodeData.translation || nodeData.rotation || nodeData.scale
 		);
-		console.log(`is TRS ${isTRS}`)
 		
 		if ( isTRS ) {
 			const translation = new THREE.Vector3().fromArray(nodeData.translation ?? [0, 0, 0]);
