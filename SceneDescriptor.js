@@ -33,6 +33,7 @@ export default class SceneDescriptor {
             this.#setParentage(node);
         });
 
+		// console.log(this.#nodeParent)
         this.#unlockAllNodes();
 
         // this.#nodes.forEach(node => {
@@ -96,6 +97,9 @@ export default class SceneDescriptor {
 
         return node;
     }
+	addNode ( nodeData ) { /// cleanup later
+		return this.#addNode( nodeData );
+	} 
 
     #deleteNode ( node ) {
 		console.log("SceneDescriptor - #deleteNode");

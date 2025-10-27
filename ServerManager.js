@@ -36,11 +36,15 @@ export default class ServerManager {
 		// 	console.log(data.command),
 		[Commands.DELETE_MARKER]:
 			( userId, data ) => this.#handleDeleteMarker(userId, data.marker),
-		// [Commands.ADD_PRIMITIVE]:
-			// ( userId, data ) => this.#handleAddPrimitive(userId, data.primitive),
+		[Commands.ADD_PRIMITIVE]:
+			( userId, data ) => this.#handleAddPrimitive(userId, data.primitive),
 		[Commands.LAMBDA]:
 			( userId, data ) => this.#handleLambda(userId, data),
 		
+	}
+
+	#log = {
+		primitives: new Map( ),
 	}
 
 	constructor ( port ) {
@@ -233,13 +237,21 @@ export default class ServerManager {
 		this.#broadcast(message, clientId);
 	}
 
-	// #handleAddPrimitive ( clientId, primitiveData ) {
-	// 	console.log(`ServerManager - #handleAddPrimitive ${clientId}`);
-	// 	console.log(primitiveData);
+	#handleAddPrimitive ( clientId, primitiveData ) {
+		console.log(`ServerManager - #handleAddPrimitive ${clientId}`);
+		console.log(primitiveData);
+		
+		const nodeId = this.#sceneDescriptor.addNode({
+			name: primitiveData.name,
+			matrix: primitiveData.matrix,
+		});
 
-	// 	const message = Messages.addMarker(clientId, primitiveData);
-	// 	this.#broadcast(message, clientId);
-	// }
+		primitiveData.nodeId = nodeId;
+		this.#log.primitives.set( nodeId, primitiveData );
+
+		const message = Messages.addPrimitive( clientId, primitiveData );
+		this.#broadcast( message );
+	}
 
 	#handleLambda ( clientId, data ) {
 		console.log(`ServerManager - #handleAddMarker ${clientId}`);
@@ -272,12 +284,22 @@ export default class ServerManager {
 	}
 
 	#newUserUpdateData ( clientId ) {
+		this.#newUserUpdateScene(clientId);
 		this.#newUserUpdateUsers(clientId);
 		this.#newUserUpdateCameras(clientId);
 		this.#newUserUpdatePointers(clientId);
 		this.#newUserUpdateMarkers(clientId);
 		this.#newUserUpdateTransforms(clientId);
 		this.#newUserUpdateSelections(clientId);
+	}
+
+	#newUserUpdateScene ( clientId ) { /// update added primitives 
+		console.log(`ServerManager - #newUserUpdateScene ${clientId}`);
+		
+		const socket = this.#clientsManager.getSocket(clientId);
+		for ( const data of this.#log.primitives ) {
+			socket.send(Messages.addPrimitive(this.#serverId, data[1]));
+		}
 	}
 
 	#newUserUpdateUsers ( clientId ) {
