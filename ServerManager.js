@@ -111,6 +111,9 @@ export default class ServerManager {
 			this.#broadcast(message);
 		}
 
+		const pointerMessage = Messages.endPointer(clientId);
+		this.#broadcast(pointerMessage);
+
 		this.#clientsManager.removeClient(clientId);
 		// this.#broadcastRemoveUser(clientId);
 
