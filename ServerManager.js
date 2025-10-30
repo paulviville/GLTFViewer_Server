@@ -245,12 +245,13 @@ export default class ServerManager {
 		console.log(primitiveData);
 		
 		const nodeId = this.#sceneDescriptor.addNode({
-			name: primitiveData.name,
+			name: primitiveData.name || `Primitive${this.#log.primitives.size}_${primitiveData.type}`,
 			matrix: primitiveData.matrix,
 		});
 
 		primitiveData.nodeId = nodeId;
 		this.#log.primitives.set( nodeId, primitiveData );
+		primitiveData.name = this.#sceneDescriptor.getNodeName(nodeId);
 
 		const message = Messages.addPrimitive( clientId, primitiveData );
 		this.#broadcast( message );
