@@ -18,12 +18,12 @@ export function deselect ( userId, nodes ) {
     return createMessage(userId, Commands.DESELECT, {nodes});
 }
 
-export function newUser ( userId ) {
-    return createMessage(Commands.SERVER_ID, Commands.NEW_USER, {userId});
+export function newUser ( userId, color ) {
+    return createMessage(Commands.SERVER_ID, Commands.NEW_USER, {userId, color});
 }
 
-export function setUser ( userId ) {
-    return createMessage(Commands.SERVER_ID, Commands.SET_USER, {userId});
+export function setUser ( userId, color ) {
+    return createMessage(Commands.SERVER_ID, Commands.SET_USER, {userId, color});
 }
 
 export function removeUser ( userId ) {

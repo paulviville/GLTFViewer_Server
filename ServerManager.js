@@ -87,11 +87,14 @@ export default class ServerManager {
         console.log(`ServerManager - #handleNewUser ${clientId}`);
 
 		const socket = this.#clientsManager.getSocket(clientId);
-		socket.send(Messages.setUser(clientId));
+		const clientColor = this.#clientsManager.getColor(clientId);
 
+		const setUserMessage = Messages.setUser(clientId, clientColor.toArray());
+		socket.send(setUserMessage);
+		console.log(setUserMessage)
 		this.#newUserUpdateData(clientId);
 
-		const message = Messages.newUser(clientId);
+		const message = Messages.newUser(clientId, clientColor.toArray());
 		this.#broadcast(message, clientId);
 		// this.#broadcastNewUser(clientId);
 	}
@@ -315,7 +318,8 @@ export default class ServerManager {
 			if( clientId1 == clientId ) 
 				continue;
 
-			socket.send(Messages.newUser(clientId1));
+			const clientColor = this.#clientsManager.getColor(clientId1);
+			socket.send(Messages.newUser(clientId1, clientColor.toArray()));
 		}
 	}
 

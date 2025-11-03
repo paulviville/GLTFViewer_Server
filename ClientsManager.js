@@ -1,5 +1,5 @@
 import AttributeContainer from "./AttributesContainer.js";
-import { Matrix4, Vector3 } from "./three/three.module.js";
+import { Color, Matrix4, Vector3 } from "./three/three.module.js";
 
 export default class ClientsManager {
     #clients = new AttributeContainer()
@@ -8,7 +8,7 @@ export default class ClientsManager {
     #pointer = this.#clients.addAttribute("pointer");
     #markers = this.#clients.addAttribute("markers");
 	#selected = this.#clients.addAttribute("selected");
-
+    #color = this.#clients.addAttribute("color");
 
     constructor ( ) {
         console.log(`ClientsManager - constructor`);
@@ -29,6 +29,10 @@ export default class ClientsManager {
         this.#markers[client] = new Map();
 		this.#selected[client] = new Set();
 
+		this.#color[client] = new Color();
+		this.#color[client].setHSL(Math.random(), 0.7 + 0.3 * Math.random(), 0.4 + 0.2 * Math.random());
+
+
         return client;
     }
 
@@ -39,6 +43,10 @@ export default class ClientsManager {
     getSocket ( client ) {
         return this.#socket[client];
     }
+
+	getColor ( client ) {
+        return this.#color[client];
+	}
 
     removeClient ( client ) {
         console.log(`ClientsManager - removeClient (${client})`);
