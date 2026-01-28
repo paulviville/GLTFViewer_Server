@@ -71,5 +71,5 @@ export function addPrimitive ( userId, primitive ) {
 }
 
 export function lambda ( userId, data ) {
-    return createMessage(userId, Commands.LAMBDA, {data});
+    return createMessage(userId, Commands.LAMBDA, {lambdaData: data});
 }
