@@ -261,7 +261,7 @@ export default class ServerManager {
 	}
 
 	#handleLambda ( clientId, data ) {
-		console.log(`ServerManager - #handleAddMarker ${clientId}`);
+		console.log(`ServerManager - #handleLambda ${clientId}`);
 
 		const message = Messages.lambda( clientId, data );
 
