@@ -39,7 +39,7 @@ export default class ServerManager {
 		[Commands.ADD_PRIMITIVE]:
 			( userId, data ) => this.#handleAddPrimitive(userId, data.primitive),
 		[Commands.LAMBDA]:
-			( userId, data ) => this.#handleLambda(userId, data),
+			( userId, data ) => this.#handleLambda(userId, data.lambdaData),
 		
 	}
 
@@ -261,7 +261,7 @@ export default class ServerManager {
 	}
 
 	#handleLambda ( clientId, data ) {
-		console.log(`ServerManager - #handleLambda ${clientId}`);
+		console.log(`ServerManager - #handleAddMarker ${clientId}`);
 
 		const message = Messages.lambda( clientId, data );
 
