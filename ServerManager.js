@@ -38,6 +38,8 @@ export default class ServerManager {
 			( userId, data ) => this.#handleDeleteMarker(userId, data.marker),
 		[Commands.ADD_PRIMITIVE]:
 			( userId, data ) => this.#handleAddPrimitive(userId, data.primitive),
+		[Commands.DELETE_PRIMITIVE]:
+			( userId, data ) => this.#handleDeletePrimitive(userId, data.primitiveId),
 		[Commands.LAMBDA]:
 			( userId, data ) => this.#handleLambda(userId, data.lambdaData),
 		
@@ -257,6 +259,18 @@ export default class ServerManager {
 		primitiveData.name = this.#sceneDescriptor.getNodeName(nodeId);
 
 		const message = Messages.addPrimitive( clientId, primitiveData );
+		this.#broadcast( message );
+	}
+
+	#handleDeletePrimitive ( clientId, primitiveId ) {
+		console.log(`ServerManager - #handleDeletePrimitive ${clientId}`);
+		console.log(primitiveId);
+		
+		this.#log.primitives.delete( primitiveId );
+		// primitiveData.name = this.#sceneDescriptor.getNodeName(nodeId);
+		this.#sceneDescriptor.deleteNode( primitiveId );
+
+		const message = Messages.deletePrimitive( clientId, primitiveId );
 		this.#broadcast( message );
 	}
 

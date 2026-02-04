@@ -21,6 +21,7 @@ export default class Commands {
     static UPDATE_MARKER = "UPDATE_MARKER";
 
     static ADD_PRIMITIVE = "ADD_PRIMITIVE";
+    static DELETE_PRIMITIVE = "DELETE_PRIMITIVE";
 	static Primitives = {
 		Sphere: "Sphere",
 		Cylinder: "Cylinder",

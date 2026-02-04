@@ -103,6 +103,12 @@ export default class SceneDescriptor {
 		return node;
 	} 
 
+	deleteNode ( node ) {
+		console.log("SceneDescriptor - deleteNode");
+		this.#deleteNode( node );
+
+	}
+
     #deleteNode ( node ) {
 		console.log("SceneDescriptor - #deleteNode");
         
