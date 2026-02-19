@@ -70,8 +70,8 @@ export function addPrimitive ( userId, primitive ) {
 	return createMessage(userId, Commands.ADD_PRIMITIVE, {primitive});
 }
 
-export function deletePrimitive ( userId, primitiveId ) {
-	return createMessage(userId, Commands.DELETE_PRIMITIVE, { primitiveId });
+export function deletePrimitive ( userId, primitive ) {
+	return createMessage(userId, Commands.DELETE_PRIMITIVE, { primitive });
 }
 
 export function lambda ( userId, data ) {
