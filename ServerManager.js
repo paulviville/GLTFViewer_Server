@@ -142,7 +142,7 @@ export default class ServerManager {
 		/// if multiselection: broadcast accepted nodes only
 
 		const message = Messages.select(clientId, nodes);
-		this.#broadcast(message);
+		this.#broadcast(message, clientId);
 
 		this.#clientsManager.selectNode(clientId, nodes[0].extras.nodeId);
 	}
